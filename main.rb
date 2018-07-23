@@ -1,6 +1,16 @@
 require 'sinatra'
 require 'json'
 
+typeToConversionType = {
+  "scale" => method(:Integer),
+
+  "bool" => ->(c) { (c.downcase == "true" || c.downcase == "yes") },
+  "string" => method(:String),
+  "int" => method(:Integer),
+  "float" => method(:String),
+  "date" => method(:String)
+}
+
 post '/' do
   payload = JSON.parse(request.body.read) unless params[:path]
   logger.info "Recieved #{payload}"
@@ -19,12 +29,10 @@ post '/' do
 
   payload["object"].each do |key, currentValue|
     structureType = payload["structure"][key]
-    if structureType == "scale"
-      convertedValue = currentValue.to_i
-    elsif structureType == "bool"
-      convertedValue = (currentValue.downcase == "true" || currentValue.downcase == "yes")
+    if typeToConversionType.key?(structureType)
+      convertedValue = typeToConversionType[structureType].call(currentValue)
     else
-      convertedValue = currentValue
+      convertedValue = convertedValue
     end
     transformedObject[key] = convertedValue
 
