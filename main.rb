@@ -32,7 +32,7 @@ post '/' do
     if typeToConversionType.key?(structureType)
       convertedValue = typeToConversionType[structureType].call(currentValue)
     else
-      convertedValue = convertedValue
+      convertedValue = currentValue
     end
     transformedObject[key] = convertedValue
 
